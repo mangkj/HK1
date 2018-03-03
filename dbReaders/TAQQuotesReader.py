@@ -1,14 +1,21 @@
 import gzip
 import struct
+import os.path
+from _collections import deque
 
 class TAQQuotesReader(object):
     '''
     This reader reads an entire compressed binary TAQ quotes file into memory,
     uncompresses it, and gives its clients access to the contents of the file
     via a set of get methods.
+    EDIT 1: The author has added several getters at the bottom of the class, as well
+    as setters to allow price and volume adjustment (done in TAQAdjust).
+    EDIT 2: The author has modified the data structures of the attributes of objects
+    of this class from tuple to deque for two reasons: Adjustment on volume and price
+    required these attributes to be mutable / Speed was needed in the treatment.
     '''
 
-
+    # EDIT 2: deque
     def __init__(self, filePathName ):
         '''
         Do all of the heavy lifting here and give users getters for the
@@ -17,31 +24,31 @@ class TAQQuotesReader(object):
         self._filePathName = filePathName
         with gzip.open( self._filePathName, 'rb') as f:
             file_content = f.read()
-            self._header = struct.unpack_from(">2i",file_content[0:8])
+            self._header = deque(struct.unpack_from(">2i",file_content[0:8]))
             
             # millis from midnight
             endI = 8 + ( 4 * self._header[1] )
-            self._ts = struct.unpack_from( ( ">%di" % self._header[ 1 ] ), file_content[ 8:endI ] )
+            self._ts = deque(struct.unpack_from( ( ">%di" % self._header[ 1 ] ), file_content[ 8:endI ] ))
             startI = endI
             
             # bid size
             endI = endI + ( 4 * self._header[1] )
-            self._bs = struct.unpack_from( ( ">%di" % self._header[ 1 ] ), file_content[ startI:endI ] )
+            self._bs = deque(struct.unpack_from( ( ">%di" % self._header[ 1 ] ), file_content[ startI:endI ] ))
             startI = endI
 
             # bid price
             endI = endI + ( 4 * self._header[1] )
-            self._bp = struct.unpack_from( ( ">%df" % self._header[ 1 ] ), file_content[ startI:endI ] )
+            self._bp = deque(struct.unpack_from( ( ">%df" % self._header[ 1 ] ), file_content[ startI:endI ] ))
             startI = endI
             
             # ask size
             endI = endI + ( 4 * self._header[1] )
-            self._as = struct.unpack_from( ( ">%di" % self._header[ 1 ] ), file_content[ startI:endI ] )
+            self._as = deque(struct.unpack_from( ( ">%di" % self._header[ 1 ] ), file_content[ startI:endI ] ))
             startI = endI
 
             # ask price
             endI = endI + ( 4 * self._header[1] )
-            self._ap = struct.unpack_from( ( ">%df" % self._header[ 1 ] ), file_content[ startI:endI ] )
+            self._ap = deque(struct.unpack_from( ( ">%df" % self._header[ 1 ] ), file_content[ startI:endI ] ))
 
     def getN(self):
         return self._header[1]
@@ -64,7 +71,13 @@ class TAQQuotesReader(object):
     def getBidPrice( self, index ):
         return self._bp[ index ]
     
-    #@lguigo (TODO)s
+    # EDIT 1: getters and setters
+    def getTicker(self):
+        return(os.path.basename(self._filePathName).split('_')[0])
+
+    def getFilePath(self):
+        return(self._filePathName)
+    
     def setAskSize( self, index, val):
         self._as[ index ] = val
     
