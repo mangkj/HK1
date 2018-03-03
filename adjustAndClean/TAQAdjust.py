@@ -14,12 +14,17 @@ class TAQAdjust(object):
 
     def __init__(self, date, quoteFile, tradeFile, s_p500):
         '''
+        date: String AAAAMMDD
+        quoteFile: TAQQuotesReader object
+        tradeFile: TAQTradeReader object
+        s_p500: String path to the s_p500.xlsx file
         '''
+        s_p500xls = pd.ExcelFile(s_p500)
         #spSheet = s_p500.parse("WRDS")
         self._quoteFile = quoteFile
         self._tradeFile = tradeFile
-        self._priceMultiplier = float(s_p500[s_p500['Names Date'] == date]['Cumulative Factor to Adjust Prices'])
-        self._volMultiplier = float(s_p500[s_p500['Names Date'] == date]['Cumulative Factor to Adjust Shares/Vol'])
+        self._priceMultiplier = float(s_p500xls[s_p500xls['Names Date'] == date]['Cumulative Factor to Adjust Prices'])
+        self._volMultiplier = float(s_p500xls[s_p500xls['Names Date'] == date]['Cumulative Factor to Adjust Shares/Vol'])
 
 
     def adjustQuote(self):
