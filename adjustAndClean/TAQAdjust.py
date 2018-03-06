@@ -1,5 +1,5 @@
 import pandas as pd
-import os.path
+import numpy as np
 
 class TAQAdjust(object):
     '''
@@ -10,54 +10,76 @@ class TAQAdjust(object):
     then no adjustment is necessary.
     '''
 
-    def __init__(self, quoteFile, tradeFile, s_p500):
+    def __init__(self, stackedQuotes, stackedTrades, ticker, s_p500):
         '''
-        quoteFile: TAQQuotesReader object
-        tradeFile: TAQTradeReader object
+        stackedQuotes: Array containing quotes (from StackData)
+        stackedTrades: Array containing trades (from StackData)
         s_p500: String path to the s_p500.xlsx file
         '''
         # Instantiate attributes
+        self._ticker = ticker
         self._s_p500xls = pd.read_excel(open(s_p500,'rb'), sheet_name='WRDS')
-        self._quoteFile = quoteFile
-        self._tradeFile = tradeFile
+        self._quotes = stackedQuotes
+        self._trades = stackedTrades
         
-        # Quotefile multipliers
-        self._dateQ  = os.path.basename(os.path.dirname(quoteFile.getFilePath()))
-        self._priceMultiplierQ = float(self._s_p500xls[(self._s_p500xls['Names Date'] == float(self._dateQ)) & (self._s_p500xls['Ticker Symbol'] == quoteFile.getTicker())]['Cumulative Factor to Adjust Prices'])
-        self._volMultiplierQ = float(self._s_p500xls[(self._s_p500xls['Names Date'] == float(self._dateQ)) & (self._s_p500xls['Ticker Symbol'] == quoteFile.getTicker())]['Cumulative Factor to Adjust Shares/Vol'])
-        
-        # Tradefile multipliers
-        self._dateT = os.path.basename(os.path.dirname(tradeFile.getFilePath()))
-        self._priceMultiplierT = float(self._s_p500xls[(self._s_p500xls['Names Date'] == float(self._dateT)) & (self._s_p500xls['Ticker Symbol'] == tradeFile.getTicker())]['Cumulative Factor to Adjust Prices'])
-        self._volMultiplierT = float(self._s_p500xls[(self._s_p500xls['Names Date'] == float(self._dateT)) & (self._s_p500xls['Ticker Symbol'] == tradeFile.getTicker())]['Cumulative Factor to Adjust Shares/Vol'])
-        
+        # Retrieve quote multipliers from the excel file, and map them to each date
+        allDates = []
+        allDates = np.append(allDates, self._quotes[:,0], axis=0)
+        allDates = np.append(allDates, self._trades[:,0], axis=0)
+        allDates = np.unique(allDates)
+        length = len(allDates)
+        self._Mult = pd.DataFrame(np.zeros((length,2)))
+        self._Mult.index = np.unique(self._quotes[:,0])
+        for date in self._Mult.index:
+            datePriceMult = float(self._s_p500xls[(self._s_p500xls['Names Date'] == float(date)) & (self._s_p500xls['Ticker Symbol'] == ticker)]['Cumulative Factor to Adjust Prices'])
+            dateVolMult = float(self._s_p500xls[(self._s_p500xls['Names Date'] == float(date)) & (self._s_p500xls['Ticker Symbol'] == ticker)]['Cumulative Factor to Adjust Shares/Vol'])
+            self._Mult.loc[date] = [ datePriceMult, dateVolMult ]
 
+    # Apply price and volume multipliers to quotes data
     def adjustQuote(self):
-        length = self._quoteFile.getN()
+        length = self._quotes.shape[0]
+        
         for i in range(0, length):
-            self._quoteFile.setAskPrice(i, self._priceMultiplierQ * self._quoteFile.getAskPrice(i))
-            self._quoteFile.setAskSize(i, self._volMultiplierQ * self._quoteFile.getAskSize(i))
-            self._quoteFile.setBidPrice(i, self._priceMultiplierQ * self._quoteFile.getBidPrice(i))
-            self._quoteFile.setBidSize(i, self._volMultiplierQ * self._quoteFile.getBidSize(i))
+            quote = self._quotes[i,:]
+            date = quote[0]
+            pMult = self._Mult.loc[date,0]
+            vMult = self._Mult.loc[date,1]
+            
+            quote[-1] = vMult * float(quote[-1])
+            quote[-2] = pMult * float(quote[-2])
+            quote[-3] = vMult * float(quote[-3])
+            quote[-4] = pMult * float(quote[-4])
 
+    # Apply price and volume multipliers to trades data
     def adjustTrade(self):
-        length = self._tradeFile.getN()
+        length = self._trades.shape[0]
+        
         for i in range(0, length):
-            self._tradeFile.setPrice(i, self._priceMultiplierT * self._tradeFile.getPrice(i))
-            self._tradeFile.setSize(i, self._volMultiplierT * self._tradeFile.getSize(i))
+            trade = self._trades[i,:]
+            date = trade[0]
+            pMult = self._Mult.loc[date,0]
+            vMult = self._Mult.loc[date,1]
+            
+            trade[-1] = vMult * float(trade[-1])
+            trade[-2] = pMult * float(trade[-2])
 
-    def getVolMult(self):
-        return(self._volMultiplierQ)
+
+    def getStackedQuotes(self):
+        return(self._quotes)
+
+    def getStackedTrades(self):
+        return(self.__trades)
+        
+    def getVolMult(self, date):
+        return(self._Mult.loc[date, 1])
     
-    def getPriceMult(self):
-        return(self._priceMultiplierQ)
+    def getPriceMult(self, date):
+        return(self._Mult.loc[date, 0])
     
     # For the purpose of unit testing
-    def setPriceMult(self, val):
-        self._priceMultiplierQ = val
-        self._priceMultiplierT = val
+    def setPriceMult(self, date, val):
+        self._Mult.loc[date, 0] = val
         
     # For the purpose of unit testing
-    def setVolMult(self, val):
-        self._volMultiplierQ = val
-        self._volMultiplierT = val
+    def setVolMult(self, date, val):
+        self._Mult.loc[date, 1] = val

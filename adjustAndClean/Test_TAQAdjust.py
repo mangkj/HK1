@@ -1,50 +1,53 @@
 import unittest
-from dbReaders.TAQQuotesReader import TAQQuotesReader
-from dbReaders.TAQTradesReader import TAQTradesReader
+import numpy as np
 from adjustAndClean.TAQAdjust import TAQAdjust
 
 class Test_TAQAdjust(unittest.TestCase):
     ''' Class testing the correction of adjustment operations on prices and volumes.
-        On the sample data given, both price and volume multipliers were 1.0.
-        So for the sake of example we modified them to .5 and .25 respectively.
-        Setters have been introduced in TAQAdjust only for that purpose.'''
+    On the sample data given, both price and volume multipliers were 1.0.
+    So for the sake of example we modified them to .5 and .25 respectively.
+    Setters have been introduced in TAQAdjust only for that purpose.
+    '''
 
     def test1(self):
-        fileNameQ = '/media/louis/DATA/documents/cours/NYU/SPRING_18/ATQS/HK1/data/sampleTAQ/sampleTAQ/quotes/20070621/MSFT_quotes.binRQ'
-        fileNameT = '/media/louis/DATA/documents/cours/NYU/SPRING_18/ATQS/HK1/data/sampleTAQ/sampleTAQ/trades/20070621/MSFT_trades.binRt'
+
         s_p500 = '/media/louis/DATA/documents/cours/NYU/SPRING_18/ATQS/HK1/s_p500.xlsx'
+        ticker = 'IBM'
+        stackedTrades = np.array([['20070620', 'IBM', 34241000, 106.5, 85200.0], ['20070621', 'IBM', 57596000, 106.61000061035156, 500.0], ['20070621', 'IBM', 57596000, 106.61000061035156, 200.0], ['20070621', 'IBM', 57597000, 106.5999984741211, 200.0]])
+        stackedQuotes = np.array([['20070620', 'IBM', 34241000, 106.5, 85200.0, 106.1, 8200.0], ['20070621', 'IBM', 57597000, 106.5, 85200.0, 106.1, 800.0]])
         
-        Qreader = TAQQuotesReader( fileNameQ )
-        Treader = TAQTradesReader( fileNameT )
-        adjuster = TAQAdjust( Qreader, Treader, s_p500 )
+        adjuster = TAQAdjust( stackedQuotes, stackedTrades, ticker, s_p500 )
         
         # Initial quote check
-        self.assertAlmostEquals( Qreader.getBidSize( Qreader.getN() - 1 ), 413, 2 )
-        self.assertAlmostEquals( Qreader.getAskSize( Qreader.getN() - 1 ), 1, 2 )
-        self.assertAlmostEquals( Qreader.getAskPrice( Qreader.getN() - 1 ), 30.229, 2 )
-        self.assertAlmostEquals( Qreader.getBidPrice( Qreader.getN() - 1 ), 30.219, 2 )
+        self.assertAlmostEquals( float(stackedQuotes[:,-4][0]), 106.5, 2 )
+        self.assertAlmostEquals( float(stackedQuotes[:,-3][0]), 85200.0, 2 )
+        self.assertAlmostEquals( float(stackedQuotes[:,-2][0]), 106.1, 2 )
+        self.assertAlmostEquals( float(stackedQuotes[:,-1][0]), 8200.0, 2 )
 
         # Initial trade check
-        self.assertAlmostEquals( Treader.getPrice( Treader.getN() - 1 ), 30.219, 2 )
-        self.assertAlmostEquals( Treader.getSize( Treader.getN() - 1 ), 12000, 2 )
+        self.assertAlmostEquals( float(stackedTrades[:,-2][0]), 106.5, 2 )
+        self.assertAlmostEquals( float(stackedTrades[:,-1][0]), 85200.0, 2 )
         
         # On the sample data given, both price and volume multipliers were 1.0.
         # So for the sake of example we modified them.
-        adjuster.setPriceMult(0.5)
-        adjuster.setVolMult(0.25)
+        adjuster.getPriceMult("20070620")
+        adjuster.getVolMult("20070620")
+        adjuster.setPriceMult("20070620", 0.5)
+        adjuster.setVolMult("20070620", 0.25)
+        adjuster.getPriceMult("20070620")
+        adjuster.getVolMult("20070620")
         adjuster.adjustQuote()
         adjuster.adjustTrade()
         
         # Quote modification check
-        self.assertAlmostEquals( Qreader.getBidSize( Qreader.getN() - 1 ), 103.25, 2 )
-        self.assertAlmostEquals( Qreader.getAskSize( Qreader.getN() - 1 ), 0.25, 2 )
-        self.assertAlmostEquals( Qreader.getAskPrice( Qreader.getN() - 1 ), 15.114, 2 )
-        self.assertAlmostEquals( Qreader.getBidPrice( Qreader.getN() - 1 ), 15.109, 2 )
+        self.assertAlmostEquals( float(stackedQuotes[:,-4][0]), 53.25, 2 )
+        self.assertAlmostEquals( float(stackedQuotes[:,-3][0]), 21300.0, 2 )
+        self.assertAlmostEquals( float(stackedQuotes[:,-2][0]), 53.05, 2 )
+        self.assertAlmostEquals( float(stackedQuotes[:,-1][0]), 2050.0, 2 )
 
         # Trade modification check
-        self.assertAlmostEquals( Treader.getPrice( Treader.getN() - 1 ), 15.109, 2 )
-        self.assertAlmostEquals( Treader.getSize( Treader.getN() - 1 ), 3000.0, 2 )
-        
+        self.assertAlmostEquals( float(stackedTrades[:,-2][0]), 53.25, 2 )
+        self.assertAlmostEquals( float(stackedTrades[:,-1][0]), 21300.0, 2 )
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.test1']
