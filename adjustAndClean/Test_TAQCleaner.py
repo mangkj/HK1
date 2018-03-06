@@ -1,48 +1,43 @@
 import unittest
-from dbReaders.TAQQuotesReader import TAQQuotesReader
-from dbReaders.TAQTradesReader import TAQTradesReader
+import numpy as np
 from adjustAndClean.TAQCleaner import TAQCleaner
 
 class Test_TAQCleaner(unittest.TestCase):
     '''TODO'''
     
     def test1(self):
-        fileNameQ = '/media/louis/DATA/documents/cours/NYU/SPRING_18/ATQS/HK1/data/sampleTAQ/sampleTAQ/quotes/20070621/MSFT_quotes.binRQ'
-        fileNameT = '/media/louis/DATA/documents/cours/NYU/SPRING_18/ATQS/HK1/data/sampleTAQ/sampleTAQ/trades/20070621/MSFT_trades.binRt'
+        stackedTrades = np.array([['20070620', 'IBM', 34241000, 106.5, 85200.0], ['20070621', 'IBM', 57596000, 106.61000061035156, 500.0], ['20070621', 'IBM', 57596000, 106.61000061035156, 200.0], ['20070621', 'IBM', 57597000, 106.5999984741211, 200.0], ['20070621', 'IBM', 57597000, 106.5999984741211, 200.0], ['20070621', 'IBM', 57597000, 106.5999984741211, 200.0]])
+        stackedQuotes = np.array([['20070620', 'IBM', 34241000, 106.5, 85200.0, 106.1, 8200.0], ['20070621', 'IBM', 57597000, 106.5, 85200.0, 106.1, 800.0], ['20070621', 'IBM', 57597000, 106.5, 85200.0, 106.1, 800.0], ['20070621', 'IBM', 57597000, 106.5, 85200.0, 106.1, 800.0], ['20070621', 'IBM', 57597000, 106.5, 85200.0, 106.1, 800.0]])
+
+        cleaner = TAQCleaner(stackedQuotes, stackedTrades)
         
-        Qreader = TAQQuotesReader( fileNameQ )
-        Treader = TAQTradesReader( fileNameT )
         
         # Initial quote check
-        self.assertAlmostEquals( Qreader.getAskPrice( Qreader.getN() - 1 ), 30.229, 2 )
-        self.assertAlmostEquals( Qreader.getBidPrice( Qreader.getN() - 1 ), 30.219, 2 )
+        self.assertAlmostEquals( float(stackedQuotes[:,-4][0]), 106.5, 2 )
+        self.assertAlmostEquals( float(stackedQuotes[:,-2][0]), 106.1, 2 )
 
         # Initial trade check
-        self.assertAlmostEquals( Treader.getPrice( Treader.getN() - 1 ), 30.219, 2 )
+        self.assertAlmostEquals( float(stackedTrades[:,-2][0]), 106.5, 2 )
         
-        # Perturbation of the last midprice by a factor 10000
-        Qreader.setAskPrice(Qreader.getN() - 1, 10000 * Qreader.getAskPrice(Qreader.getN() - 1))
-        Qreader.setBidPrice(Qreader.getN() - 1, 10000 * Qreader.getBidPrice(Qreader.getN() - 1))
         
-        # Perturbation of the last trade price by a factor 5000
-        Treader.setPrice(Treader.getN() - 1, 5000 * Treader.getPrice(Treader.getN() - 1))
+        # Perturbation of the first midprice by a factor 10000
+        stackedQuotes[:,-4][0] = float(stackedQuotes[:,-4][0]) * 10000
+        stackedQuotes[:,-2][0] = float(stackedQuotes[:,-2][0]) * 10000
+        
+        # Perturbation of the first trade price by a factor 10000
+        stackedTrades[:,-2][0] = float(stackedTrades[:,-2][0]) * 10000
 
         # Check the execution of the perturbations
-        self.assertAlmostEquals( Qreader.getAskPrice( Qreader.getN() - 1 ), 302299.99542, 2 )
-        self.assertAlmostEquals( Qreader.getBidPrice( Qreader.getN() - 1 ), 302199.99313, 2 )
-        self.assertAlmostEqual( Treader.getPrice( Treader.getN() - 1), 151099.99656, 2 )
-        
-        cleaner = TAQCleaner( Qreader, Treader)
+        self.assertAlmostEquals( float(stackedQuotes[:,-4][0]), 1065000.0, 2 )
+        self.assertAlmostEquals( float(stackedQuotes[:,-2][0]), 1061000.0, 2 )
+        self.assertAlmostEquals( float(stackedTrades[:,-2][0]), 1065000.0, 2 )
         
         # Execute quote cleaning
-        print(Qreader.getN())
         cleaner.cleanQuotes()
-        print(Qreader.getN())
         
         # Execute trade cleaning
-        print(Treader.getN())
         cleaner.cleanTrades()
-        print(Treader.getN())
+        print(stackedTrades)
         
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.test1']
