@@ -26,6 +26,13 @@ class FileManager(object):
         if( not( access( baseDir + "quotes", R_OK ) and access( baseDir + "trades", R_OK ) ) ):
             raise Exception( "You don't have access to both the trades and quotes subdirectories of %s" % baseDir )
         self._baseDir = baseDir
+     
+    #cb
+    def getTradeTickerDates(self, startDateString, endDateString, ticker ):
+        return self.__getTickerDates__( self._baseDir + "trades", startDateString, endDateString, ticker )
+    #cb
+    def getQuoteTickerDates(self, startDateString, endDateString, ticker ):
+        return self.__getTickerDates__( self._baseDir + "quotes", startDateString, endDateString, ticker )
         
     def getTradeDates(self, startDateString, endDateString ):
         return self.__getDates__( self._baseDir + "trades", startDateString, endDateString )
@@ -66,6 +73,39 @@ class FileManager(object):
             )
         )
         return goodDirs
+     
+     #cb
+    def __getTickerDates__(
+        self,
+        dir, # "/data/taq/quotes" or "/data/taq/trades"
+        startDateString, # eg "20070620"
+        endDateString, # eg "20070630"
+        ticker
+    ):
+        if startDateString == None:
+            startDateString = "20070620"
+        if endDateString == None:
+            endDateString = "20070930"
+        try:
+            startDate = int( startDateString )
+            endDate = int( endDateString )
+        except:
+            raise Exception( "Could not convert date string to dates" )
+        
+        filetype = dir.split('/')[-1]
+        filename = ''
+        if filetype == 'quotes':
+            filename = ticker + "_quotes.binRQ"
+        elif filetype == 'trades':
+            filename = ticker + "_trades.binRT"
+            
+        goodDirs = list(
+            filter(
+                lambda dirName: os.path.exists( os.path.join( dir, dirName, filename ) ), os.listdir( dir )
+            )
+        )
+        return goodDirs
+        #
         
     def __goodDate__(self, startDate, endDate, dateString ):
         try:
