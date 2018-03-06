@@ -36,6 +36,8 @@ class Test_TAQAdjust(unittest.TestCase):
         adjuster.setVolMult("20070620", 0.25)
         adjuster.getPriceMult("20070620")
         adjuster.getVolMult("20070620")
+        
+        # Adjust
         adjuster.adjustQuote()
         adjuster.adjustTrade()
         
