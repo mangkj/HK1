@@ -17,6 +17,7 @@ class TAQCleaner(object):
         # Instantiate file attributes
         self._quoteFile = quoteFile
         self._tradeFile = tradeFile
+        self._store = storeRepo
         
         # Suggested initial parameters, to calibrate
         self._k = 5
@@ -40,7 +41,7 @@ class TAQCleaner(object):
         # Midpoints
         midList = 0.5 * (np.array(self._quoteFile.getAskPriceSlice(0, length)) - np.array(self._quoteFile.getBidPriceSlice(0, length)))
         
-        while(i + len(toRemove) < length):
+        for i in range(0,length):
             leftIndex = i - self._k / 2
             rightIndex = i + self._k / 2
             
@@ -58,14 +59,9 @@ class TAQCleaner(object):
             rollStdMid = np.std(rollWindowMid)
             
             # Test criterion
-            toRemoveMidList = np.array([])
             for j in range(0, self._k):
                 if (abs(rollWindowMid[j] - rollMeanMid) < 2 * rollStdMid + self._gamma * minTickDiff):
                     toRemove = np.append(toRemove, leftIndex + j)
-                    toRemoveMidList = np.append(toRemoveMidList, leftIndex + j)
-            
-            np.delete(midList, toRemoveMidList)
-            i += 1
         
         self._quoteFile.cleanList(toRemove)
                     
@@ -86,7 +82,7 @@ class TAQCleaner(object):
         
         windowTrade = self._tradeFile.getPriceSlice(0, length)
         
-        while(i + len(toRemove) < length):
+        for i in range(0,length):
             leftIndex = i - self._k / 2
             rightIndex = i + self._k / 2
             
@@ -104,15 +100,10 @@ class TAQCleaner(object):
             rollStd = np.std(rollWindow)
             
             # Test criterion
-            toRemoveList = np.array([])
             for j in range(0, self._k):
                 if (abs(rollWindow[j] - rollMean) < 2 * rollStd + self._gamma * minTickDiff):
                     toRemove = np.append(toRemove, leftIndex + j)
-                    toRemoveMidList = np.append(toRemoveList, leftIndex + j)
-            
-            np.delete(windowTrade, toRemoveMidList)
-            i += 1
-        
+
         self._tradeFile.cleanList(toRemove)
-            
+
         
