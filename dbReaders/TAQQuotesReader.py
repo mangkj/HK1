@@ -59,6 +59,9 @@ class TAQQuotesReader(object):
     
     def getMillisFromMidn( self, index ):
         return self._ts[ index ]
+    
+    def getTimestamp(self, index ):
+        return self.getMillisFromMidn( index ) # Compatibility 
 
     def getAskSize( self, index ):
         return self._as[ index ]
