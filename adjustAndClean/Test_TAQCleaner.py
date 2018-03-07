@@ -3,7 +3,9 @@ import numpy as np
 from adjustAndClean.TAQCleaner import TAQCleaner
 
 class Test_TAQCleaner(unittest.TestCase):
-    '''TODO'''
+    '''
+    Testing cleaning on a simple example
+    '''
     
     def test1(self):
         stackedTrades = np.array([['20070620', 'IBM', 34241000, 106.5, 85200.0], ['20070621', 'IBM', 57596000, 106.61000061035156, 500.0], ['20070621', 'IBM', 57596000, 106.61000061035156, 200.0], ['20070621', 'IBM', 57597000, 106.5999984741211, 200.0], ['20070621', 'IBM', 57597000, 106.5999984741211, 200.0], ['20070621', 'IBM', 57597000, 106.5999984741211, 200.0]])

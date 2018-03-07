@@ -10,6 +10,7 @@ class TAQCleaner(object):
 
     def __init__(self, stackedQuotes, stackedTrades, k=45, gamma=0.02):
         '''
+        Constructor: initialize attributes
         '''
         # Instantiate attributes
         self._quotes = stackedQuotes
@@ -30,6 +31,7 @@ class TAQCleaner(object):
         rollMeanMid = 0
         rollStdMid = 0
         
+        # BROWNLEES AND GALLO SUGGESTION (unused, we followed the assignment guidelines)
         # Min price difference in the timeframe 
         # It is likely to be the resolution parameter for the stock given the high number of transactions
         #askIncrements = np.array(self._quotes[1:length,-2].astype(np.float)) - np.array(self._quotes[0:length-1,-2].astype(np.float))
@@ -56,22 +58,13 @@ class TAQCleaner(object):
             rollMeanMid = np.mean(rollWindowMid)
             rollStdMid = np.std(rollWindowMid)
 
-            #print("rollmean", rollMeanMid)
-            #print("rollStd", rollStdMid)
-            #print("rollWindow", rollWindowMid)
-            #print("gamma", 3 * self._gamma * minTickDiff)
-            
             # Test criterion
             for j in range(0, self._k):
-                # TODO: Calibrate gamma and k
                 if (abs(rollWindowMid[j] - rollMeanMid) >= 2 * rollStdMid + self._gamma * rollMeanMid):
                     toRemove = np.append(toRemove, leftIndex + j)
-                    #print(rollWindowMid[j])
-                    print(j)
                     
         toRemove = np.unique(toRemove)
         toRemove = toRemove.astype(int)
-        #print(toRemove)
         return(toRemove)
                     
     def cleanTradesIndices(self):
@@ -85,6 +78,7 @@ class TAQCleaner(object):
         rollMean = 0
         rollStd = 0
         
+        # BROWNLEES AND GALLO SUGGESTION (unused, we followed the assignment guidelines)
         # Min price difference in the timeframe 
         # It is likely to be the resolution parameter for the stock given the high number of transactions
         #tradeIncrements = np.array(self._trades[1:length,-2].astype(np.float)) - np.array(self._trades[0:length-1,-2].astype(np.float))
@@ -111,14 +105,12 @@ class TAQCleaner(object):
 
             # Test criterion
             for j in range(0, self._k):
-                # TODO: Calibrate gamma and k
                 if (abs(rollWindow[j] - rollMean) >= 2 * rollStd + self._gamma * rollMean):
                     self._trades
                     toRemove = np.append(toRemove, leftIndex + j)
                     
         toRemove = np.unique(toRemove)
         toRemove = toRemove.astype(int)
-        #print(toRemove)
         return(toRemove)
         
     def storeCleanedTrades(self, directory):
