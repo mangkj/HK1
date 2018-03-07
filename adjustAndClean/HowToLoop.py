@@ -41,7 +41,7 @@ class HowToLoop(object):
             
             # Clean
             cleaner = TAQCleaner(quotes, trades)
-            cleaner.cleanQuotes()
-            cleaner.cleanTrades()
+            quotes = np.delete(quotes, cleaner.cleanQuotesIndices(), axis = 0)
+            trades = np.delete(trades, cleaner.cleanTradesIndices(), axis = 0)
             
         """ The datastructure to store those elements is up to you """
