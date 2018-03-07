@@ -68,14 +68,3 @@ class TAQTradesReader(object):
 
     def getPriceSlice(self, start, end):
         return list(itertools.islice(self._p, start, end))
-    
-    def cleanList(self, indices):
-        for i in sorted(indices, reverse=True): 
-            del self._p[i]
-            del self._s[i]
-            del self._ts[i]
-        
-        # Update fields
-        self._header[1] = self._header[1] - len(indices)
-        self._header[0] = self.getMillisFromMidn( 0 )
-            

@@ -99,14 +99,3 @@ class TAQQuotesReader(object):
 
     def getBidPriceSlice(self, start, end):
         return list(itertools.islice(self._bp, start, end))
-
-    def cleanList(self, indices):
-        for i in sorted(indices, reverse=True): 
-            del self._bp[i]
-            del self._bs[i]
-            del self._ap[i]
-            del self._as[i]
-
-        # Update fields
-        self._header[1] = self._header[1] - len(indices)
-        self._header[0] = self.getMillisFromMidn( 0 )
