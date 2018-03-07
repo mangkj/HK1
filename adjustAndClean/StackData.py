@@ -25,11 +25,18 @@ class StackData(object):
         # Find sizes to allocate the right space
         lengthQ = 0
         for date in self._datesQ:
-            lengthQ += self._fm.getQuotesFile(date, self._ticker).getN()
+            try:
+                lengthQ += self._fm.getQuotesFile(date, self._ticker).getN()
+            except:
+                continue
             
         lengthT = 0
         for date in self._datesT:
-            lengthT += self._fm.getTradesFile(date, self._ticker).getN()
+            try:
+                lengthT += self._fm.getTradesFile(date, self._ticker).getN()
+            except:
+                continue
+            
         
         # Stacked data for this ticker
         self._stackedQuotes = np.empty((lengthQ,7), dtype=object)
@@ -39,8 +46,10 @@ class StackData(object):
     def addQuotes(self):
         l = 0
         for date in self._datesQ:
-            quoteFile = self._fm.getQuotesFile(date, self._ticker)
-            
+            try:
+                quoteFile = self._fm.getQuotesFile(date, self._ticker)
+            except:
+                continue
             # Append the day data [DATE, TICKER, TIMESTAMP, BIDPRICE, BIDSIZE, ASKPRICE, ASKSIZE]
             length = quoteFile.getN()
             for i in range(0, length):
@@ -51,8 +60,10 @@ class StackData(object):
     def addTrades(self):
         l = 0
         for date in self._datesT:
-            tradeFile = self._fm.getTradesFile(date, self._ticker)
-            
+            try:
+                tradeFile = self._fm.getTradesFile(date, self._ticker)
+            except:
+                continue
             # Append the day data [DATE, TICKER, TIMESTAMP, PRICE, SIZE]
             length = tradeFile.getN()
             for i in range(0, length):
