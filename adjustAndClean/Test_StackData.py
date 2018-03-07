@@ -1,6 +1,4 @@
 import unittest
-import pandas as pd
-import numpy as np
 from adjustAndClean.StackData import StackData
 
 class Test_StackData(unittest.TestCase):
