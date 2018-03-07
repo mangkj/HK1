@@ -5,9 +5,10 @@ class TAQCleaner(object):
     '''
     Cleans an array of TAQ Data.
     The method gives the option to store the cleaned data to files.
+    Default values for k and gamma were those given by the simulation (cf. CleanCalibration.py)
     '''
 
-    def __init__(self, stackedQuotes, stackedTrades, k=5, gamma=0.005):
+    def __init__(self, stackedQuotes, stackedTrades, k=45, gamma=0.02):
         '''
         '''
         # Instantiate attributes

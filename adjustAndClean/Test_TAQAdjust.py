@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 from adjustAndClean.TAQAdjust import TAQAdjust
 
-class Test_TAQAdjust(unittest.TestCase):
+class Test_TAQAdjust2(unittest.TestCase):
     ''' Class testing the correction of adjustment operations on prices and volumes.
     On the sample data given, both price and volume multipliers were 1.0.
     So for the sake of example we modified them to .5 and .25 respectively.

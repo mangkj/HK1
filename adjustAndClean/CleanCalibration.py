@@ -4,7 +4,13 @@ from adjustAndClean.TAQCleaner import TAQCleaner
 import numpy as np
 import pandas as pd
 import random
-from numpy.linalg.linalg import _isEmpty2d
+
+"""
+Calibration program for gamma and k.
+We try different values and choose the one that minimize the kurtosis, and keep the skewness around 0.
+We pick random stocks and compute mean kurtosis and skewness with several values of (k,gamma).
+RESULT: After simulations, we get k = 45 and gamma = 0.02.
+"""
 
 # Dataframe
 baseDir = '/media/louis/DATA/Courant_dataset_matlab/R/'
@@ -60,9 +66,12 @@ for k in k_test:
 min1 = np.unravel_index(np.argmin(skews, axis=None), skews.shape)
 min2 = np.unravel_index(np.argmin(kurtosiss, axis=None), kurtosiss.shape)
 
+# Display results, leave analysis to the programmer
+
 print(min1)
 print(min2)
 
 print(skews)
 print(kurtosiss)
+
 
