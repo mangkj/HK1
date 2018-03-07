@@ -8,7 +8,7 @@ class Test_StackData(unittest.TestCase):
     '''
 
     def test1(self):
-        baseDir = '/media/louis/DATA/documents/cours/NYU/SPRING_18/ATQS/HK1/data/sampleTAQ/sampleTAQ'
+        baseDir = '/media/louis/DATA/Courant_dataset_matlab/R/'
         
         ticker = "IBM"
 

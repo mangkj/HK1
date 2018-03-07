@@ -16,9 +16,9 @@ class StackData(object):
         self._fm = FileManager( baseDir )
         
         # Retrieve list of trading days for trades & quotes files
-        self._datesT = self._fm.getTradeDates(startDate, endDate) # 20070620, 20070621, ...
-        self._datesQ = self._fm.getQuoteDates(startDate, endDate)
-
+        self._datesT = np.sort(self._fm.getTradeDates(startDate, endDate)) # 20070620, 20070621, ...
+        self._datesQ = np.sort(self._fm.getQuoteDates(startDate, endDate))
+        
         # Ticker searched
         self._ticker = ticker
 

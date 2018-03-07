@@ -40,7 +40,7 @@ class HowToLoop(object):
             adjuster.adjustTrade()
             
             # Clean
-            cleaner = TAQCleaner(quotes, trades)
+            cleaner = TAQCleaner(quotes, trades, k=5, gamma = 0.005)
             quotes = np.delete(quotes, cleaner.cleanQuotesIndices(), axis = 0)
             trades = np.delete(trades, cleaner.cleanTradesIndices(), axis = 0)
             

@@ -7,7 +7,7 @@ class TAQCleaner(object):
     The method gives the option to store the cleaned data to files.
     '''
 
-    def __init__(self, stackedQuotes, stackedTrades):
+    def __init__(self, stackedQuotes, stackedTrades, k=5, gamma=0.005):
         '''
         '''
         # Instantiate attributes
@@ -15,9 +15,8 @@ class TAQCleaner(object):
         self._trades = stackedTrades
         
         # Suggested initial parameters, to calibrate
-        self._k = 5
-        self._gamma = 0.0005
-
+        self._k = k
+        self._gamma = gamma
 
     def cleanQuotesIndices(self):
         # toRemove will keep track of indices to remove
@@ -32,9 +31,9 @@ class TAQCleaner(object):
         
         # Min price difference in the timeframe 
         # It is likely to be the resolution parameter for the stock given the high number of transactions
-        askIncrements = np.array(self._quotes[1:length,-2].astype(np.float)) - np.array(self._quotes[0:length-1,-2].astype(np.float))
-        bidIncrements = np.array(self._quotes[1:length,-4].astype(np.float)) - np.array(self._quotes[0:length-1,-4].astype(np.float))
-        minTickDiff = min(abs(np.min(askIncrements)), abs(np.min(bidIncrements)))
+        #askIncrements = np.array(self._quotes[1:length,-2].astype(np.float)) - np.array(self._quotes[0:length-1,-2].astype(np.float))
+        #bidIncrements = np.array(self._quotes[1:length,-4].astype(np.float)) - np.array(self._quotes[0:length-1,-4].astype(np.float))
+        #minTickDiff = min(abs(np.min(askIncrements)), abs(np.min(bidIncrements)))
         
         # Midpoints
         midList = 0.5 * (np.array(self._quotes[0:length,-4].astype(np.float)) - np.array(self._quotes[0:length,-2].astype(np.float)))
@@ -64,7 +63,7 @@ class TAQCleaner(object):
             # Test criterion
             for j in range(0, self._k):
                 # TODO: Calibrate gamma and k
-                if (abs(rollWindowMid[j] - rollMeanMid) >= 2 * rollStdMid + self._gamma * minTickDiff):
+                if (abs(rollWindowMid[j] - rollMeanMid) >= 2 * rollStdMid + self._gamma * rollMeanMid):
                     toRemove = np.append(toRemove, leftIndex + j)
                     #print(rollWindowMid[j])
                     print(j)
@@ -87,8 +86,8 @@ class TAQCleaner(object):
         
         # Min price difference in the timeframe 
         # It is likely to be the resolution parameter for the stock given the high number of transactions
-        tradeIncrements = np.array(self._trades[1:length,-2].astype(np.float)) - np.array(self._trades[0:length-1,-2].astype(np.float))
-        minTickDiff = abs(np.min(tradeIncrements))
+        #tradeIncrements = np.array(self._trades[1:length,-2].astype(np.float)) - np.array(self._trades[0:length-1,-2].astype(np.float))
+        #minTickDiff = abs(np.min(tradeIncrements))
 
         windowTrade = np.array(self._trades[0:length,-2].astype(np.float))
         
@@ -112,7 +111,7 @@ class TAQCleaner(object):
             # Test criterion
             for j in range(0, self._k):
                 # TODO: Calibrate gamma and k
-                if (abs(rollWindow[j] - rollMean) >= 2 * rollStd + self._gamma * minTickDiff):
+                if (abs(rollWindow[j] - rollMean) >= 2 * rollStd + self._gamma * rollMean):
                     self._trades
                     toRemove = np.append(toRemove, leftIndex + j)
                     
@@ -120,7 +119,6 @@ class TAQCleaner(object):
         toRemove = toRemove.astype(int)
         #print(toRemove)
         return(toRemove)
-
         
     def storeCleanedTrades(self, directory):
         print("TODO")
