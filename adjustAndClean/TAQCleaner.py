@@ -19,7 +19,7 @@ class TAQCleaner(object):
         self._gamma = 0.0005
 
 
-    def cleanQuotes(self):
+    def cleanQuotesIndices(self):
         # toRemove will keep track of indices to remove
         length = self._quotes.shape[0]
         toRemove = np.array([])
@@ -72,9 +72,9 @@ class TAQCleaner(object):
         toRemove = np.unique(toRemove)
         toRemove = toRemove.astype(int)
         #print(toRemove)
-        self._quotes = np.delete(self._quotes, toRemove, axis = 0)
+        return(toRemove)
                     
-    def cleanTrades(self):
+    def cleanTradesIndices(self):
         # toRemove will keep track of indices to remove
         length = self._trades.shape[0]
         toRemove = np.array([])
@@ -113,14 +113,14 @@ class TAQCleaner(object):
             for j in range(0, self._k):
                 # TODO: Calibrate gamma and k
                 if (abs(rollWindow[j] - rollMean) >= 2 * rollStd + self._gamma * minTickDiff):
+                    self._trades
                     toRemove = np.append(toRemove, leftIndex + j)
                     
         toRemove = np.unique(toRemove)
         toRemove = toRemove.astype(int)
-        #toRemove = np.append(toRemove, [1], axis=0)
         #print(toRemove)
-        self._trades = np.delete(self._trades, toRemove)
-        #print(self._trades)
+        return(toRemove)
+
         
     def storeCleanedTrades(self, directory):
         print("TODO")
